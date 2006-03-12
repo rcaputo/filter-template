@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: 02_macro_usebytes.t,v 1.6 2004/11/25 06:59:12 rcaputo Exp $
+# $Id$
 # vim: filetype=perl
 
 use strict;

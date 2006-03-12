@@ -1,11 +1,11 @@
-# $Id: Preprocessor.pm,v 1.35 2004/12/18 04:24:57 rcaputo Exp $
+# $Id$
 
 package Filter::Inline;
 
 use strict;
 
 use vars qw($VERSION);
-$VERSION = do {my@r=(q$Revision: 1.35 $=~/\d+/g);sprintf"%d."."%04d"x$#r,@r};
+$VERSION = '1.00';
 
 use Carp qw(croak);
 use Filter::Util::Call;

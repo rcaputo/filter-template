@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: Makefile.PL 6 2005-06-22 04:31:41Z rcaputo $
+# $Id$
 
 use ExtUtils::MakeMaker;
 

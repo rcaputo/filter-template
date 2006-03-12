@@ -1,10 +1,7 @@
-# $Id: UseBytes.pm,v 1.3 2003/11/21 05:08:26 rcaputo Exp $
+# $Id$
 
 package Filter::Inline::UseBytes;
 use Filter::Inline;
-
-use vars qw($VERSION);
-$VERSION = do {my@r=(q$Revision: 1.3 $=~/\d+/g);sprintf"%d."."%04d"x$#r,@r};
 
 # Make the "use_bytes" macro evaluate to C<use bytes;> in Perl on or
 # after 5.005_55.  Systems before then don't have the option, so the

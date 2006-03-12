@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: 01_preprocessor.t,v 1.1 2004/09/04 22:50:36 rcaputo Exp $
+# $Id$
 # vim: filetype=perl
 
 # Tests basic macro features.
