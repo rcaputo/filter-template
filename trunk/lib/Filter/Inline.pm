@@ -629,12 +629,14 @@ Filter::Inline - an inline macro/const/enum preprocessor
 
 	const PI 3.14159265359
 
-	print "PI\n";  # Substitutions don't grok Perl!
+	print "PI\n";         # Macros are expanded inside strings.
+	print "HAPPINESS\n";  # Also expanded due to naive parser.
 
 	enum ZERO ONE TWO
 	enum 12 TWELVE THIRTEEN FOURTEEN
 	enum + FIFTEEN SIXTEEN SEVENTEEN
 
+	# Prints numbers, due to naive parser.
 	print "ZERO ONE TWO TWELVE THIRTEEN FOURTEEN FIFTEEN SIXTEEN SEVENTEEN\n";
 
 	if ($expression) {      # include
@@ -651,59 +653,62 @@ Filter::Inline - an inline macro/const/enum preprocessor
 
 =head1 DESCRIPTION
 
-Filter::Inline is a Perl source filter that implements a simple macro
-substitution language.  Think of it like compile-time code templates.
+Filter::Inline is a Perl source filter that provides simple inline
+code expansion.  It implements a simple macro substitution language
+that looks a lot like compile-time code templates.
 
 =head2 Macros
 
-Macros are defined with the C<macro> statement.  The syntax is similar
-to Perl subs:
+Inline code is defied with the C<macro> statement.  Defining inline
+macros is similar to defining templated Perl subroutines.
 
-	macro macro_name (parameter_0, parameter_1) {
-		macro code ... parameter_0 ... parameter_1 ...
+	macro oops {
+		die "Oops"
 	}
 
 The open brace is required to be on the same line as the C<macro>
-statement.  The Preprocessor doesn't analyze macro bodies.  Instead,
-it assumes that any closing brace in the leftmost column ends an open
+keyword.  The Preprocessor doesn't analyze macro bodies.  Instead, it
+assumes that the first closing brace in the first column ends an open
 macro.
 
-The parameter list is optional for macros that don't accept
-parameters.
+Macros are invoked with a template-like syntax that was chosen to be
+compatible with common text editors' Perl syntax highlighting.
 
-	macro macro_name {
-		macro code;
+	{% oops %}
+
+Macros can have parameters, which are expanded at compile time when a
+macro body is inserted into a program.  Macros that take parameters
+look like subroutines with named prototypes.
+
+	macro sum_2 (parameter_0, parameter_1) {
+		print( parameter_0 + parameter_1, "\n" );
 	}
 
-Macros are substituted into a program with a syntax borrowed from
-Iaijutsu and altered slightly to jive with Perl's native syntax.
+Here's the invocation:
 
-	{% macro_name $param_1, 'param two' %}
-
-This is the code the first macro would generate:
-
-	macro code ... $param_1 ... 'param two' ...
+	{% sum_2 $base, $increment %}
 
 =head2 Constants and Enumerations
 
-The C<const> command defines a constant.
+Filter::Inline defines C<const> and C<enum> keywords.  They are
+essentially simplified macros with very basic syntax:
 
 	const CONSTANT_NAME    'constant value'
 	const ANOTHER_CONSTANT 23
 
-Enumerations are defined with the C<enum> command.  Enumerations start
-from zero by default:
+Enumerations are like constants, but several sequential integers can
+be defined in one statement.  Enumerations start from zero by default:
 
-	enum ZEROTH FIRST SECOND ...
+	enum ZEROTH FIRST SECOND
 
 If the first parameter of an enumeration is a number, then the
 enumerated constants will start with that value:
 
 	enum 10 TENTH ELEVENTH TWELFTH
 
-C<enum> statements may not span lines.  If the first enumeration
-parameter is a plus sign, the constants will start where a previous
-C<enum> left off.
+Enumerations may not span lines, but they can be continued.  If the
+first enumeration parameter is the plus sign, then constants will
+start where the previous enumeration left off.
 
 	enum 13 THIRTEENTH FOURTEENTH  FIFTEENTH
 	enum +  SIXTEENTH  SEVENTEENTH EIGHTEENTH
@@ -735,12 +740,13 @@ Conditional includes are nestable, but else and elsif must be on the
 same line as the previous block's closing brace, as they are in the
 previous example.
 
-Conditional includes are experimental pending a decision on how useful
-they are.
+Filter::Inline::UseBytes uses conditional code to define different
+versions of a {% use_bytes %} macro depending whether the C<bytes>
+pragma exists.
 
 =head1 IMPORTING MACROS/CONSTANTS
 
-		use Filter::Inline ( isa => 'SomeModule' );
+	use Filter::Inline ( isa => 'SomeModule' );
 
 This method of calling Preprocessor causes the macros and constants of
 C<SomeModule> to be imported for use in the current namespace.  These
@@ -753,23 +759,23 @@ as well.
 
 =head1 DEBUGGING
 
-Filter::Inline has three debugging constants which may be defined
-before the first time it is used.
+Filter::Inline has three debugging constants which will only take
+effect if they are defined before the module is first used.
 
 To trace source filtering in general, and to see the resulting code
-and operations performed on each line:
+and operations performed on each line, define:
 
 	sub Filter::Inline::DEBUG () { 1 }
 
-To trace macro invocations as they happen:
+To trace macro invocations as they happen, define:
 
 	sub Filter::Inline::DEBUG_INVOKE () { 1 }
 
-To see macro, constant, and enum definitions:
+To see macro, constant, and enum definitions, define:
 
 	sub Filter::Inline::DEBUG_DEFINE () { 1 }
 
-To see warnings when a macro or constant is redefined:
+To see warnings when a macro or constant is redefined, define:
 
 	sub Filter::Inline::DEFINE () { 1 }
 
@@ -794,9 +800,11 @@ The regexp optimizer is based on code in Ilya Zakharevich's
 Text::Trie.  Better regexp optimizers were released afterwards, and
 Filter::Inline should use one of them.
 
+Probably others.
+
 =head1 SEE ALSO
 
-L<Text::Trie>, L<PAR>.
+L<Text::Trie>, L<PAR>, L<Filter::Inline::UseBytes>.
 
 =head1 AUTHOR & COPYRIGHT
 
