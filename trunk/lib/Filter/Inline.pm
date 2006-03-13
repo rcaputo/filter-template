@@ -1,6 +1,6 @@
 # $Id$
 
-package Filter::Inline;
+package Filter::Template;
 
 use strict;
 
@@ -613,13 +613,13 @@ __END__
 
 =head1 NAME
 
-Filter::Inline - an inline macro/const/enum preprocessor
+Filter::Template - source code templates for inline code (macros)
 
 =head1 SYNOPSIS
 
-	use Filter::Inline;
+	use Filter::Template;
 
-	# use Filter::Inline ( isa => 'SomeModule' );
+	# use Filter::Template ( isa => 'SomeModule' );
 
 	macro max (one,two) {
 		((one) > (two) ? (one) : (two))
@@ -653,14 +653,14 @@ Filter::Inline - an inline macro/const/enum preprocessor
 
 =head1 DESCRIPTION
 
-Filter::Inline is a Perl source filter that provides simple inline
+Filter::Template is a Perl source filter that provides simple Template
 code expansion.  It implements a simple macro substitution language
 that looks a lot like compile-time code templates.
 
 =head2 Macros
 
-Inline code is defied with the C<macro> statement.  Defining inline
-macros is similar to defining templated Perl subroutines.
+Code templates are defied with the C<macro> statement.  Defining
+inline macros is similar to defining templated Perl subroutines.
 
 	macro oops {
 		die "Oops"
@@ -690,7 +690,7 @@ Here's the invocation:
 
 =head2 Constants and Enumerations
 
-Filter::Inline defines C<const> and C<enum> keywords.  They are
+Filter::Template defines C<const> and C<enum> keywords.  They are
 essentially simplified macros with very basic syntax:
 
 	const CONSTANT_NAME    'constant value'
@@ -740,13 +740,13 @@ Conditional includes are nestable, but else and elsif must be on the
 same line as the previous block's closing brace, as they are in the
 previous example.
 
-Filter::Inline::UseBytes uses conditional code to define different
+Filter::Template::UseBytes uses conditional code to define different
 versions of a {% use_bytes %} macro depending whether the C<bytes>
 pragma exists.
 
 =head1 IMPORTING MACROS/CONSTANTS
 
-	use Filter::Inline ( isa => 'SomeModule' );
+	use Filter::Template ( isa => 'SomeModule' );
 
 This method of calling Preprocessor causes the macros and constants of
 C<SomeModule> to be imported for use in the current namespace.  These
@@ -759,25 +759,25 @@ as well.
 
 =head1 DEBUGGING
 
-Filter::Inline has three debugging constants which will only take
+Filter::Template has three debugging constants which will only take
 effect if they are defined before the module is first used.
 
 To trace source filtering in general, and to see the resulting code
 and operations performed on each line, define:
 
-	sub Filter::Inline::DEBUG () { 1 }
+	sub Filter::Template::DEBUG () { 1 }
 
 To trace macro invocations as they happen, define:
 
-	sub Filter::Inline::DEBUG_INVOKE () { 1 }
+	sub Filter::Template::DEBUG_INVOKE () { 1 }
 
 To see macro, constant, and enum definitions, define:
 
-	sub Filter::Inline::DEBUG_DEFINE () { 1 }
+	sub Filter::Template::DEBUG_DEFINE () { 1 }
 
 To see warnings when a macro or constant is redefined, define:
 
-	sub Filter::Inline::DEFINE () { 1 }
+	sub Filter::Template::DEFINE () { 1 }
 
 =head1 BUGS
 
@@ -785,7 +785,7 @@ Source filters are line-based, and so is the macro language.  The only
 constructs that may span lines are macro definitions, and those
 B<must> span lines.
 
-Filter::Inline does not parse perl.  The regular expressions that
+Filter::Template does not parse perl.  The regular expressions that
 detect and replace code are simplistic and may not do the right things
 when parsing challenging Perl syntax.  Constants are replaced within
 strings, for example.
@@ -798,21 +798,21 @@ The regexp optimizer does not optimize (?:x|y|z) as character classes.
 
 The regexp optimizer is based on code in Ilya Zakharevich's
 Text::Trie.  Better regexp optimizers were released afterwards, and
-Filter::Inline should use one of them.
+Filter::Template should use one of them.
 
 Probably others.
 
 =head1 SEE ALSO
 
-L<Text::Trie>, L<PAR>, L<Filter::Inline::UseBytes>.
+L<Text::Trie>, L<PAR>, L<Filter::Template::UseBytes>.
 
 =head1 AUTHOR & COPYRIGHT
 
-Filter::Inline is Copyright 2000-2006 Rocco Caputo.  Some parts are
-Copyright 2001 Matt Cashner.  All rights reserved.  Filter::Inline is
-free software; you may redistribute it and/or modify it under the same
-terms as Perl itself.
+Filter::Template is Copyright 2000-2006 Rocco Caputo.  Some parts are
+Copyright 2001 Matt Cashner.  All rights reserved.  Filter::Template
+is free software; you may redistribute it and/or modify it under the
+same terms as Perl itself.
 
-Filter::Inline was previously known as POE::Preprocessor.
+Filter::Template was previously known as POE::Preprocessor.
 
 =cut

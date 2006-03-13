@@ -9,7 +9,7 @@ use strict;
 use lib qw(./mylib);
 use Test::More tests => 18;
 
-BEGIN { use_ok("Filter::Inline") };
+BEGIN { use_ok("Filter::Template") };
 
 # Define some inline macros.
 

@@ -7,10 +7,10 @@ use ExtUtils::MakeMaker;
 open(CHANGES, ">>CHANGES") and close CHANGES;
 
 WriteMakefile(
-	NAME         => 'Filter::Inline',
+	NAME         => 'Filter::Template',
 	AUTHOR       => 'Rocco Caputo <rcaputo@cpan.org>',
 	ABSTRACT     => 'Source filter for inline code templating.',
-	VERSION_FROM => 'lib/Filter/Inline.pm',
+	VERSION_FROM => 'lib/Filter/Template.pm',
 
 	PREREQ_PM    => {
 		'Filter::Util::Call'  => 1.0601,

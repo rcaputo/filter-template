@@ -1,7 +1,7 @@
 # $Id$
 
-package Filter::Inline::UseBytes;
-use Filter::Inline;
+package Filter::Template::UseBytes;
+use Filter::Template;
 
 use vars qw($VERSION);
 $VERSION = '1.00';
@@ -40,11 +40,11 @@ __END__
 
 =head1 NAME
 
-Filter::Inline::UseBytes - conditionally use bytes.pm depending on availability
+Filter::Template::UseBytes - conditionally use bytes.pm depending on availability
 
 =head1 SYNOPSIS
 
-	use Filter::Inline ( isa => "Filter::Inline::UseBytes" );
+	use Filter::Template ( isa => "Filter::Template::UseBytes" );
 
 	print "Phi length in characters: ", length(chr(0x618)), "\n";
 	{% use_bytes %}
@@ -58,18 +58,19 @@ does nothing but doesn't throw an exception either.
 
 =head1 BUGS
 
-All the caveats of L<Filter::Inline> apply here.
+All the caveats of L<Filter::Template> apply here.
 
 =head1 SEE ALSO
 
-L<Filter::Inline>.
+L<Filter::Template>.
 
 =head1 AUTHOR & COPYRIGHT
 
-Filter::Inline::UseBytes is Copyright 2000-2006 Rocco Caputo.  All
-rights reserved.  Filter::Inline::UseBytes is free software; you may
+Filter::Template::UseBytes is Copyright 2000-2006 Rocco Caputo.  All
+rights reserved.  Filter::Template::UseBytes is free software; you may
 redistribute it and/or modify it under the same terms as Perl itself.
 
-Filter::Inline::UseBytes was previously known as POE::Macro::UseBytes.
+Filter::Template::UseBytes was previously known as
+POE::Macro::UseBytes.
 
 =cut
