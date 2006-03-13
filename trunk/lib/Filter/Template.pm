@@ -11,14 +11,14 @@ use Carp qw(croak);
 use Filter::Util::Call;
 use Symbol qw(gensym);
 
-use constant MAC_PARAMETERS   => 0;
-use constant MAC_CODE         => 1;
-use constant MAC_NAME         => 2; # only used in temporary %macro
-use constant MAC_FILE         => 3;
-use constant MAC_LINE         => 4; # only used in temporary %macro
+use constant TMP_PARAMETERS   => 0;
+use constant TMP_CODE         => 1;
+use constant TMP_NAME         => 2; # only used in temporary %template
+use constant TMP_FILE         => 3;
+use constant TMP_LINE         => 4; # only used in temporary %template
 
 use constant STATE_PLAIN      => 0x0000;
-use constant STATE_MACRO_DEF  => 0x0001;
+use constant STATE_TEMPL_DEF  => 0x0001;
 
 use constant COND_FLAG        => 0;
 use constant COND_LINE        => 1;
@@ -31,8 +31,8 @@ use constant COND_INDENT      => 2;
 
 BEGIN {
 	defined &DEBUG        or eval 'sub DEBUG        () { 0 }'; # preprocessor
-	defined &DEBUG_INVOKE or eval 'sub DEBUG_INVOKE () { 0 }'; # macro invocs
-	defined &DEBUG_DEFINE or eval 'sub DEBUG_DEFINE () { 0 }'; # macro defines
+	defined &DEBUG_INVOKE or eval 'sub DEBUG_INVOKE () { 0 }'; # templ invocs
+	defined &DEBUG_DEFINE or eval 'sub DEBUG_DEFINE () { 0 }'; # templ defines
 	defined &WARN_DEFINE  or eval 'sub WARN_DEFINE  () { 0 }'; # redefine warning
 };
 
@@ -132,7 +132,7 @@ sub fix_exclude {
 	}
 }
 
-my (%constants, %macros, %const_regexp, %macro);
+my (%constants, %templates, %const_regexp, %template);
 
 sub import {
 	my $self = shift;
@@ -143,14 +143,14 @@ sub import {
 
 	# Outer closure to define a unique scope.
 	{
-		my $macro_name = '';
-		my ($macro_line, $enum_index);
+		my $template_name = '';
+		my ($template_line, $enum_index);
 		my ($package_name, $file_name, $line_number) = (caller)[0,1,2];
 		my $const_regexp_dirty = 0;
 		my $state = STATE_PLAIN;
 
 		# The following block processes inheritance requests for
-		# macros/constants and enums.  added by sungo 09/2001
+		# templates/constants and enums.  added by sungo 09/2001
 		my @isas;
 
 		if ($args{isa}) {
@@ -172,8 +172,10 @@ sub import {
 					$const_regexp_dirty = 1;
 				}
 
-				foreach my $macro (keys %{$macros{$isa}}) {
-					$macros{$package_name}->{$macro} = $macros{$isa}->{$macro};
+				foreach my $template (keys %{$templates{$isa}}) {
+					$templates{$package_name}->{$template} = (
+						$templates{$isa}->{$template}
+					);
 				}
 			}
 		}
@@ -238,12 +240,12 @@ sub import {
 					);
 					s/\#\s+/\# /;
 
-					# Dummy line in the macro.
-					if ($state & STATE_MACRO_DEF) {
+					# Dummy line in the template.
+					if ($state & STATE_TEMPL_DEF) {
 						local $_ = $_;
 						s/B/\# B/;
-						$macro_line++;
-						$macro{$package_name}->[MAC_CODE] .= $_;
+						$template_line++;
+						$template{$package_name}->[TMP_CODE] .= $_;
 						DEBUG and warn sprintf "%4d M: # mac 1: %s", $line_number, $_;
 					}
 					else {
@@ -259,7 +261,7 @@ sub import {
 					pop @{$conditional_stacks{$package_name}};
 					&fix_exclude($package_name);
 
-					unless ($state & STATE_MACRO_DEF) {
+					unless ($state & STATE_TEMPL_DEF) {
 						DEBUG and warn sprintf "%4d C: %s", $line_number, $_;
 						return $status;
 					}
@@ -281,7 +283,7 @@ sub import {
 						);
 						&fix_exclude($package_name);
 
-						unless ($state & STATE_MACRO_DEF) {
+						unless ($state & STATE_TEMPL_DEF) {
 							DEBUG and warn sprintf "%4d C: %s", $line_number, $_;
 							return $status;
 						}
@@ -299,12 +301,12 @@ sub import {
 						);
 						s/\#\s+/\# /;
 
-						# Dummy line in the macro.
-						if ($state & STATE_MACRO_DEF) {
+						# Dummy line in the template.
+						if ($state & STATE_TEMPL_DEF) {
 							local $_ = $_;
 							s/B/\# B/;
-							$macro_line++;
-							$macro{$package_name}->[MAC_CODE] .= $_;
+							$template_line++;
+							$template{$package_name}->[TMP_CODE] .= $_;
 							DEBUG and warn sprintf "%4d M: # mac 2: %s", $line_number, $_;
 						}
 						else {
@@ -334,12 +336,12 @@ sub import {
 						);
 						s/\#\s+/\# /;
 
-						# Dummy line in the macro.
-						if ($state & STATE_MACRO_DEF) {
+						# Dummy line in the template.
+						if ($state & STATE_TEMPL_DEF) {
 							local $_ = $_;
 							s/B/\# B/;
-							$macro_line++;
-							$macro{$package_name}->[MAC_CODE] .= $_;
+							$template_line++;
+							$template{$package_name}->[TMP_CODE] .= $_;
 							DEBUG and warn sprintf "%4d M: # mac 3: %s", $line_number, $_;
 						}
 						else {
@@ -351,22 +353,22 @@ sub import {
 				}
 
 				### Not including code, so comment it out.  Don't return
-				### $status here since the code may well be in a macro.
+				### $status here since the code may well be in a template.
 				if ($excluding_code{$package_name}) {
 					s{^($exclude_indent{$package_name})?}
 					 {$exclude_indent{$package_name}\# };
 
-					# Kludge: Must thwart macros on this line.
-					s/\{\%(.*?)\%\}/MACRO($1)/g;
+					# Kludge: Must thwart templates on this line.
+					s/\{\%(.*?)\%\}/TEMPLATE($1)/g;
 
-					unless ($state & STATE_MACRO_DEF) {
+					unless ($state & STATE_TEMPL_DEF) {
 						DEBUG and warn sprintf "%4d C: %s", $line_number, $_;
 						return $status;
 					}
 				}
 
-				### Inside a macro definition.
-				if ($state & STATE_MACRO_DEF) {
+				### Inside a template definition.
+				if ($state & STATE_TEMPL_DEF) {
 
 					# Close it!
 					if (/^\}\s*$/) {
@@ -374,40 +376,43 @@ sub import {
 
 						DEBUG_DEFINE and warn (
 							",-----\n",
-							"| Defined macro $macro_name\n",
+							"| Defined template $template_name\n",
 							"| Parameters: ",
-							@{$macro{$package_name}->[MAC_PARAMETERS]}, "\n",
+							@{$template{$package_name}->[TMP_PARAMETERS]}, "\n",
 							"| Code: {\n",
-							$macro{$package_name}->[MAC_CODE],
+							$template{$package_name}->[TMP_CODE],
 							"| }\n",
 							"`-----\n"
 						);
 
-						$macro{$package_name}->[MAC_CODE] =~ s/^\s*//;
-						$macro{$package_name}->[MAC_CODE] =~ s/\s*$//;
+						$template{$package_name}->[TMP_CODE] =~ s/^\s*//;
+						$template{$package_name}->[TMP_CODE] =~ s/\s*$//;
 
 						if (
 							WARN_DEFINE and
-							exists $macros{$package_name}->{$macro_name} and
-							( $macros{$package_name}->{$macro_name}->[MAC_CODE] ne
-								$macro{$package_name}->[MAC_CODE]
+							exists $templates{$package_name}->{$template_name} and
+							(
+								$templates{$package_name}->{$template_name}->[TMP_CODE] ne
+								$template{$package_name}->[TMP_CODE]
 							)
 						) {
 							warn(
-								"macro $macro_name redefined at ",
+								"template $template_name redefined at ",
 								"$file_name line $line_number\n"
 							);
 						}
 
-						$macros{$package_name}->{$macro_name} = $macro{$package_name};
+						$templates{$package_name}->{$template_name} = (
+							$template{$package_name}
+						);
 
-						$macro_name = '';
+						$template_name = '';
 					}
 
-					# Otherwise append this line to the macro.
+					# Otherwise append this line to the template.
 					else {
-						$macro_line++;
-						$macro{$package_name}->[MAC_CODE] .= $_;
+						$template_line++;
+						$template{$package_name}->[TMP_CODE] .= $_;
 					}
 
 					# Either way, the code must not go on.
@@ -463,26 +468,26 @@ sub import {
 					return $status;
 				}
 
-				### Begin a macro definition.
-				if (/^macro\s*(\w+)\s*(?:\((.*?)\))?\s*\{\s*$/) {
-					$state = STATE_MACRO_DEF;
+				### Begin a template definition.
+				if (/^template\s*(\w+)\s*(?:\((.*?)\))?\s*\{\s*$/) {
+					$state = STATE_TEMPL_DEF;
 
 					my $temp_line = $_;
 
-					$macro_name = $1;
-					$macro_line = 0;
-					my @macro_params = (
+					$template_name = $1;
+					$template_line = 0;
+					my @template_params = (
 						(defined $2)
 						? split(/\s*\,\s*/, $2)
 						: ()
 					);
 
-					$macro{$package_name} = [
-						\@macro_params, # MAC_PARAMETERS
-						'',             # MAC_CODE
-						$macro_name,    # MAC_NAME
-						$file_name,     # MAC_FILE
-						$line_number,   # MAC_LINE
+					$template{$package_name} = [
+						\@template_params,  # TMP_PARAMETERS
+						'',                 # TMP_CODE
+						$template_name,     # TMP_NAME
+						$file_name,         # TMP_FILE
+						$line_number,       # TMP_LINE
 					];
 
 					$_ = "# $temp_line";
@@ -491,7 +496,7 @@ sub import {
 					return $status;
 				}
 
-				### Perform macro substitutions.
+				### Perform template substitutions.
 				my $substitutions = 0;
 				while (/(\{\%\s+(\S+)\s*(.*?)\s*\%\})/gs) {
 					my ($name, $params) = ($2, $3);
@@ -500,18 +505,20 @@ sub import {
 					# the newly inserted text may also be checked.
 					pos($_) -= length($1);
 
-					DEBUG_INVOKE and warn ",-----\n| macro invocation: $name $params\n";
+					DEBUG_INVOKE and warn(
+						",-----\n| template invocation: $name $params\n"
+					);
 
-					if (exists $macros{$package_name}->{$name}) {
+					if (exists $templates{$package_name}->{$name}) {
 
 						my @use_params = split /\s*\,\s*/, $params;
 						my @mac_params = (
-							@{$macros{$package_name}->{$name}->[MAC_PARAMETERS]}
+							@{$templates{$package_name}->{$name}->[TMP_PARAMETERS]}
 						);
 
 						if (@use_params != @mac_params) {
 							warn(
-								"macro $name parameter count (",
+								"template $name parameter count (",
 								scalar(@use_params),
 								") doesn't match defined count (",
 								scalar(@mac_params),
@@ -522,9 +529,9 @@ sub import {
 						}
 
 						# Build a new bit of code here.
-						my $substitution = $macros{$package_name}->{$name}->[MAC_CODE];
-						my $macro_file   = $macros{$package_name}->{$name}->[MAC_FILE];
-						my $macro_line   = $macros{$package_name}->{$name}->[MAC_LINE];
+						my $substitution  = $templates{$package_name}->{$name}->[TMP_CODE];
+						my $template_file = $templates{$package_name}->{$name}->[TMP_FILE];
+						my $template_line = $templates{$package_name}->{$name}->[TMP_LINE];
 
 						foreach my $mac_param (@mac_params) {
 							my $use_param = shift @use_params;
@@ -538,8 +545,8 @@ sub import {
 								splice(
 									@sub_lines, $sub_line, 0,
 									"# line $line_number " .
-									"\"macro $name (defined in $macro_file at line " .
-									($macro_line + $sub_line + 1) . ") " .
+									"\"template $name (defined in $template_file at line " .
+									($template_line + $sub_line + 1) . ") " .
 									"invoked from $file_name\""
 								);
 							}
@@ -555,7 +562,7 @@ sub import {
 					}
 					else {
 						die(
-							"macro $name has not been defined ",
+							"template $name has not been defined ",
 							 "at $file_name line $line_number\n"
 						 );
 						last;
@@ -598,13 +605,13 @@ sub import {
 	}
 }
 
-# Clear a package's macros.  Used for destructive testing.
+# Clear a package's templates.  Used for destructive testing.
 sub clear_package {
 	my ($self, $package) = @_;
 	delete $constants{$package};
-	delete $macros{$package};
+	delete $templates{$package};
 	delete $const_regexp{$package};
-	delete $macro{$package};
+	delete $template{$package};
 }
 
 1;
@@ -613,7 +620,7 @@ __END__
 
 =head1 NAME
 
-Filter::Template - source code templates for inline code (macros)
+Filter::Template - a source filter for inline code templates (macros)
 
 =head1 SYNOPSIS
 
@@ -621,7 +628,7 @@ Filter::Template - source code templates for inline code (macros)
 
 	# use Filter::Template ( isa => 'SomeModule' );
 
-	macro max (one,two) {
+	template max (one,two) {
 		((one) > (two) ? (one) : (two))
 	}
 
@@ -629,7 +636,7 @@ Filter::Template - source code templates for inline code (macros)
 
 	const PI 3.14159265359
 
-	print "PI\n";         # Macros are expanded inside strings.
+	print "PI\n";         # Constants are expanded inside strings.
 	print "HAPPINESS\n";  # Also expanded due to naive parser.
 
 	enum ZERO ONE TWO
@@ -653,51 +660,66 @@ Filter::Template - source code templates for inline code (macros)
 
 =head1 DESCRIPTION
 
-Filter::Template is a Perl source filter that provides simple Template
-code expansion.  It implements a simple macro substitution language
-that looks a lot like compile-time code templates.
+Filter::Template is a Perl source filter that provides simple inline
+source code templates.  Inlined source code can be significantly
+faster than subroutines, especially for small-scale functions like
+accessors and mutators.  On the other hand, they are more difficult to
+maintain and use.  Choose your trade-offs wisely.
 
-=head2 Macros
+=head2 Templates
 
-Code templates are defied with the C<macro> statement.  Defining
-inline macros is similar to defining templated Perl subroutines.
+Code templates are defined with the C<template> statement, which looks
+a lot like C<sub>.  Because this is a naive source filter, however,
+the open brace must be on the same line as the C<template> keyword.
+Furthermore, the first closing brace in column zero ends a macro body.
 
-	macro oops {
-		die "Oops"
+	template oops {
+		die "Oops";
 	}
 
-The open brace is required to be on the same line as the C<macro>
-keyword.  The Preprocessor doesn't analyze macro bodies.  Instead, it
-assumes that the first closing brace in the first column ends an open
-macro.
+Templates are inserted into a program using a simple syntax that was
+adapted from other template libraries.  It was chosen to be compatible
+with the Perl syntax highlighting of common text editors.
 
-Macros are invoked with a template-like syntax that was chosen to be
-compatible with common text editors' Perl syntax highlighting.
+This inserts the body of C<template oops>.
 
 	{% oops %}
 
-Macros can have parameters, which are expanded at compile time when a
-macro body is inserted into a program.  Macros that take parameters
-look like subroutines with named prototypes.
+Templates can have parameters.  The syntax for template parameters was
+based on prototypes for Perl subroutines.  The two main differences
+are that parameters are named, and sigils are not used.
 
 	macro sum_2 (parameter_0, parameter_1) {
 		print( parameter_0 + parameter_1, "\n" );
 	}
 
-Here's the invocation:
+To insert a template with parameters, simply list the parameters after
+the template name.
 
 	{% sum_2 $base, $increment %}
 
+At expansion time, occurrences of the parameter names within the
+template are replaced with the source code provided in the template
+invocation.  In the previous example, C<sum_2> literally expands to
+
+  print( $base + $increment, "\n" );
+
+and is then compiled by Perl.
+
 =head2 Constants and Enumerations
 
-Filter::Template defines C<const> and C<enum> keywords.  They are
-essentially simplified macros with very basic syntax:
+Filter::Template also defines C<const> and C<enum> keywords.  They are
+essentially simplified templates without parameters.
 
-	const CONSTANT_NAME    'constant value'
-	const ANOTHER_CONSTANT 23
+C<const> defines a constant that is replaced before compile time.
+Unlike Perl's native constants, these are not demoted to function
+calls when Perl is run in debugging or profiling mode.
 
-Enumerations are like constants, but several sequential integers can
-be defined in one statement.  Enumerations start from zero by default:
+	const CONSTANT_NAME     'constant value'
+	const ANOTHER_CONSTANT  23
+
+Enumerations are like constants but several sequential integers can be
+defined in one statement.  Enumerations start from zero by default:
 
 	enum ZEROTH FIRST SECOND
 
@@ -744,18 +766,17 @@ Filter::Template::UseBytes uses conditional code to define different
 versions of a {% use_bytes %} macro depending whether the C<bytes>
 pragma exists.
 
-=head1 IMPORTING MACROS/CONSTANTS
+=head1 IMPORTING TEMPLATES
 
-	use Filter::Template ( isa => 'SomeModule' );
+Filter::Template can import templates defined by another class.  For
+example, this invocation imports the C<use_bytes> template:
 
-This method of calling Preprocessor causes the macros and constants of
-C<SomeModule> to be imported for use in the current namespace.  These
-macros and constants can be overridden simply by defining items in the
-current namespace of the same name.
+	use Filter::Template ( isa => 'Filter::Template::UseBytes' );
 
-Note: if the macros in C<SomeModule> require additional perl modules,
-any code which imports these macros will need to C<use> those modules
-as well.
+Imported templates can be redefined in the current namespace.
+
+Note: If the imported templates require additional Perl modules, any
+code which imports them must also C<use> those modules.
 
 =head1 DEBUGGING
 
@@ -767,23 +788,23 @@ and operations performed on each line, define:
 
 	sub Filter::Template::DEBUG () { 1 }
 
-To trace macro invocations as they happen, define:
+To trace template invocations as they happen, define:
 
 	sub Filter::Template::DEBUG_INVOKE () { 1 }
 
-To see macro, constant, and enum definitions, define:
+To see template, constant, and enum definitions, define:
 
 	sub Filter::Template::DEBUG_DEFINE () { 1 }
 
-To see warnings when a macro or constant is redefined, define:
+To see warnings when a template or constant is redefined, define:
 
 	sub Filter::Template::DEFINE () { 1 }
 
 =head1 BUGS
 
-Source filters are line-based, and so is the macro language.  The only
-constructs that may span lines are macro definitions, and those
-B<must> span lines.
+Source filters are line-based, and so is the template language.  The
+only constructs that may span lines are template definitions, and
+those B<must> span lines.
 
 Filter::Template does not parse perl.  The regular expressions that
 detect and replace code are simplistic and may not do the right things

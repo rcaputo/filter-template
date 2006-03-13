@@ -6,11 +6,11 @@ use Filter::Template;
 use vars qw($VERSION);
 $VERSION = '1.00';
 
-# Make the "use_bytes" macro evaluate to C<use bytes;> in Perl on or
+# Make the "use_bytes" template evaluate to C<use bytes;> in Perl on or
 # after 5.005_55.  Systems before then don't have the option, so the
-# macro evaluates to emptiness.
+# template evaluates to emptiness.
 
-# Macro definitions can't be indented, so this looks ugly.
+# Template definitions can't be indented, so this looks ugly.
 
 # The "# include" modifier causes the conditional to be evaluated at
 # compile time.  This turns regular if/else logic into the moral
@@ -26,11 +26,11 @@ BEGIN {
 };
 
 if (HAS_BYTES) { # include
-macro use_bytes {
+template use_bytes {
 	use bytes;
 }
 } else { # include
-macro use_bytes {
+template use_bytes {
 }
 } # include
 
@@ -52,7 +52,7 @@ Filter::Template::UseBytes - conditionally use bytes.pm depending on availabilit
 
 =head1 DESCRIPTION
 
-The UseBytes macro evaluates to C<use bytes;> if Perl 5.005_55 or
+The UseBytes template evaluates to C<use bytes;> if Perl 5.005_55 or
 later is running.  Otherwise it evaluates to an empty string, which
 does nothing but doesn't throw an exception either.
 

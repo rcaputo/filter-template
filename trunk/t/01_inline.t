@@ -2,7 +2,7 @@
 # $Id$
 # vim: filetype=perl
 
-# Tests basic macro features.
+# Tests basic template features.
 
 use strict;
 
@@ -11,21 +11,21 @@ use Test::More tests => 18;
 
 BEGIN { use_ok("Filter::Template") };
 
-# Define some inline macros.
+# Define some inline templates.
 
-macro numeric_max (<one>, <two>) {
+template numeric_max (<one>, <two>) {
 	(((<one>) > (<two>)) ? (<one>) : (<two>))
 }
 
-macro numeric_min (<one>, <two>) {
+template numeric_min (<one>, <two>) {
 	(((<one>) < (<two>)) ? (<one>) : (<two>))
 }
 
-macro lexical_max (<one>, <two>) {
+template lexical_max (<one>, <two>) {
 	(((<one>) gt (<two>)) ? (<one>) : (<two>))
 }
 
-macro lexical_min (<one>, <two>) {
+template lexical_min (<one>, <two>) {
 	(((<one>) lt (<two>)) ? (<one>) : (<two>))
 }
 
@@ -49,7 +49,7 @@ ok(NUM_ELEVEN == 11, "NUM\_ELEVEN == 11");
 ok(LEX_ONE eq 'one', "LEX\_ONE eq one");
 ok(LEX_TWO eq 'two', "LEX\_TWO eq two");
 
-# Test the macros.
+# Test the templates.
 
 ok( {% numeric_max NUM_ONE, NUM_TWO %}    == 2,  "numeric_max" );
 ok( {% numeric_min NUM_TEN, NUM_ELEVEN %} == 10, "numeric_min" );
