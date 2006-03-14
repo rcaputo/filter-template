@@ -5,7 +5,7 @@ package Filter::Template;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '1.00';
+$VERSION = '1.01';
 
 use Carp qw(croak);
 use Filter::Util::Call;
