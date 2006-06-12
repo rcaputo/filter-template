@@ -13,7 +13,7 @@ WriteMakefile(
 	VERSION_FROM => 'lib/Filter/Template.pm',
 
 	PREREQ_PM    => {
-		'Filter::Util::Call'  => 1.0601,
+		'Filter::Util::Call'  => 1.06,
 		'Test::More'          => 0,
 	},
 	dist         => {
