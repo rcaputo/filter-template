@@ -689,7 +689,7 @@ Templates can have parameters.  The syntax for template parameters was
 based on prototypes for Perl subroutines.  The two main differences
 are that parameters are named, and sigils are not used.
 
-	macro sum_2 (parameter_0, parameter_1) {
+	template sum_2 (parameter_0, parameter_1) {
 		print( parameter_0 + parameter_1, "\n" );
 	}
 
