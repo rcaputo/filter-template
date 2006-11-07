@@ -10,6 +10,7 @@ WriteMakefile(
 	NAME         => 'Filter::Template',
 	AUTHOR       => 'Rocco Caputo <rcaputo@cpan.org>',
 	ABSTRACT     => 'Source filter for inline code templating.',
+	LICENSE      => 'perl',
 	VERSION_FROM => 'lib/Filter/Template.pm',
 
 	PREREQ_PM    => {
