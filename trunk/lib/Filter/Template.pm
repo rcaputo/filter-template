@@ -800,7 +800,7 @@ To see warnings when a template or constant is redefined, define:
 
 	sub Filter::Template::DEFINE () { 1 }
 
-=head1 BUGS
+=head1 CAVEATS
 
 Source filters are line-based, and so is the template language.  The
 only constructs that may span lines are template definitions, and
@@ -821,7 +821,17 @@ The regexp optimizer is based on code in Ilya Zakharevich's
 Text::Trie.  Better regexp optimizers were released afterwards, and
 Filter::Template should use one of them.
 
-Probably others.
+=head1 BUG TRACKER
+
+https://rt.cpan.org/Dist/Display.html?Status=Active&Queue=Filter-Template
+
+=head1 REPOSITORY
+
+http://thirdlobe.com/svn/filter-template/
+
+=head1 OTHER RESOURCES
+
+http://search.cpan.org/dist/Filter-Template/
 
 =head1 SEE ALSO
 
@@ -829,7 +839,7 @@ L<Text::Trie>, L<PAR>, L<Filter::Template::UseBytes>.
 
 =head1 AUTHOR & COPYRIGHT
 
-Filter::Template is Copyright 2000-2006 Rocco Caputo.  Some parts are
+Filter::Template is Copyright 2000-2009 Rocco Caputo.  Some parts are
 Copyright 2001 Matt Cashner.  All rights reserved.  Filter::Template
 is free software; you may redistribute it and/or modify it under the
 same terms as Perl itself.

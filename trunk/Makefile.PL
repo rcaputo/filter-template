@@ -12,7 +12,12 @@ WriteMakefile(
 	ABSTRACT     => 'Source filter for inline code templating.',
 	LICENSE      => 'perl',
 	VERSION_FROM => 'lib/Filter/Template.pm',
-
+	META_ADD     => {
+		resources  => {
+			license    => 'http://dev.perl.org/licenses/',
+			repository => 'http://thirdlobe.com/svn/filter-template/trunk'
+		},
+	},
 	PREREQ_PM    => {
 		'Filter::Util::Call'  => 1.06,
 		'Test::More'          => 0,
