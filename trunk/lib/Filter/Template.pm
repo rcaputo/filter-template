@@ -5,7 +5,7 @@ package Filter::Template;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '1.02';
+$VERSION = '1.03';
 
 use Carp qw(croak);
 use Filter::Util::Call;
@@ -821,15 +821,17 @@ The regexp optimizer is based on code in Ilya Zakharevich's
 Text::Trie.  Better regexp optimizers were released afterwards, and
 Filter::Template should use one of them.
 
-=head1 BUG TRACKER
+=head1 LINKS
+
+=head2 BUG TRACKER
 
 https://rt.cpan.org/Dist/Display.html?Status=Active&Queue=Filter-Template
 
-=head1 REPOSITORY
+=head2 REPOSITORY
 
 http://thirdlobe.com/svn/filter-template/
 
-=head1 OTHER RESOURCES
+=head2 OTHER RESOURCES
 
 http://search.cpan.org/dist/Filter-Template/
 
