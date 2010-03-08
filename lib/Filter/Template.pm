@@ -1,11 +1,9 @@
-# $Id$
-
 package Filter::Template;
 
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '1.03';
+$VERSION = '1.040';
 
 use Carp qw(croak);
 use Filter::Util::Call;
@@ -829,7 +827,8 @@ https://rt.cpan.org/Dist/Display.html?Status=Active&Queue=Filter-Template
 
 =head2 REPOSITORY
 
-http://thirdlobe.com/svn/filter-template/
+http://github.com/rcaputo/filter-template
+http://gitorious.org/filter-template
 
 =head2 OTHER RESOURCES
 
@@ -841,7 +840,7 @@ L<Text::Trie>, L<PAR>, L<Filter::Template::UseBytes>.
 
 =head1 AUTHOR & COPYRIGHT
 
-Filter::Template is Copyright 2000-2009 Rocco Caputo.  Some parts are
+Filter::Template is Copyright 2000-2010 Rocco Caputo.  Some parts are
 Copyright 2001 Matt Cashner.  All rights reserved.  Filter::Template
 is free software; you may redistribute it and/or modify it under the
 same terms as Perl itself.

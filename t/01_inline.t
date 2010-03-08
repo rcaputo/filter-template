@@ -1,5 +1,4 @@
 #!/usr/bin/perl -w
-# $Id$
 # vim: filetype=perl
 
 # Tests basic template features.

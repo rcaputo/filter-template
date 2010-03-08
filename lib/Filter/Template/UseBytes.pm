@@ -1,5 +1,3 @@
-# $Id$
-
 package Filter::Template::UseBytes;
 use Filter::Template;
 
