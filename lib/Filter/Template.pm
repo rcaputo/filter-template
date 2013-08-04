@@ -2,9 +2,6 @@ package Filter::Template;
 
 use strict;
 
-use vars qw($VERSION);
-$VERSION = '1.040';
-
 use Carp qw(croak);
 use Filter::Util::Call;
 use Symbol qw(gensym);
@@ -840,7 +837,7 @@ L<Text::Trie>, L<PAR>, L<Filter::Template::UseBytes>.
 
 =head1 AUTHOR & COPYRIGHT
 
-Filter::Template is Copyright 2000-2010 Rocco Caputo.  Some parts are
+Filter::Template is Copyright 2000-2013 Rocco Caputo.  Some parts are
 Copyright 2001 Matt Cashner.  All rights reserved.  Filter::Template
 is free software; you may redistribute it and/or modify it under the
 same terms as Perl itself.
